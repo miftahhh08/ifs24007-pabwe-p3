@@ -32,7 +32,38 @@ const escapeHTML = (value) => {
     return div.innerHTML;
 };
 
-const isValidURL = (url) => /^https?:\/\/[^\s]+$/i.test(url.trim());
+function isValidURL(value) {
+    try {
+        const parsedURL = new URL(value.trim());
+        return (
+            (parsedURL.protocol === "http:" || parsedURL.protocol === "https:") &&
+            Boolean(parsedURL.hostname)
+        );
+    } catch {
+        return false;
+    }
+}
+
+function loadFromStorage(key, fallback = [], validator = () => true) {
+    try {
+        const storedValue = localStorage.getItem(key);
+        if (!storedValue) return fallback;
+
+        const parsedValue = JSON.parse(storedValue);
+        return validator(parsedValue) ? parsedValue : fallback;
+    } catch {
+        return fallback;
+    }
+}
+
+function showFormError(selector, message) {
+    const errorElement = $(selector);
+    if (!errorElement) return;
+
+    errorElement.textContent = message;
+    errorElement.classList.toggle("hidden", !message);
+    errorElement.setAttribute("aria-hidden", String(!message));
+}
 
 
 /* ==================== TAB ==================== */
@@ -151,7 +182,7 @@ $("#confirm-delete").addEventListener("click", () => {
 
 const EXPENSE_KEY = "mimimind_expenses";
 
-let expenses = JSON.parse(localStorage.getItem(EXPENSE_KEY)) || [];
+let expenses = loadFromStorage(EXPENSE_KEY, [], Array.isArray);
 
 const expenseForm = $("#expense-form");
 const expenseList = $("#expense-list");
@@ -177,10 +208,7 @@ function validateExpense(title, category, amount, type, date) {
 }
 
 function showExpenseError(elementId, message) {
-    const errorElement = $(`#${elementId}`);
-    errorElement.textContent = message;
-    errorElement.classList.toggle("hidden", !message);
-    errorElement.setAttribute("aria-hidden", String(!message));
+    showFormError(`#${elementId}`, message);
 }
 
 expenseForm.addEventListener("submit", (event) => {
@@ -369,7 +397,7 @@ $("#expense-edit-form").addEventListener("submit", (event) => {
 
 const BOOKMARK_KEY = "mimimind_bookmarks";
 
-let bookmarks = JSON.parse(localStorage.getItem(BOOKMARK_KEY)) || [];
+let bookmarks = loadFromStorage(BOOKMARK_KEY, [], Array.isArray);
 
 function saveBookmarks() {
     localStorage.setItem(BOOKMARK_KEY, JSON.stringify(bookmarks));
@@ -388,14 +416,11 @@ function validateBookmark(title, url, category) {
 }
 
 function showBookmarkError(message, errorSelector = "#bookmark-form-error") {
-    const errorElement = $(errorSelector);
-    errorElement.textContent = message;
-    errorElement.classList.toggle("hidden", !message);
-    errorElement.setAttribute("aria-hidden", String(!message));
+    showFormError(errorSelector, message);
 }
 
 function clearBookmarkError(errorSelector = "#bookmark-form-error") {
-    showBookmarkError("", errorSelector);
+    showFormError(errorSelector, "");
 }
 
 $("#bookmark-form").addEventListener("submit", (event) => {
@@ -584,8 +609,16 @@ let currentQuestion = 0;
 let quizScore = 0;
 let selectedAnswer = null;
 
+// Quiz state: currentQuestion dan quizScore hanya mengatur sesi aktif.
+// High score disimpan terpisah di localStorage agar tetap tersedia setelah refresh.
 function getHighScore() {
-    return Number(localStorage.getItem(QUIZ_KEY)) || 0;
+    const storedScore = loadFromStorage(
+        QUIZ_KEY,
+        0,
+        (value) => Number.isFinite(Number(value)) && Number(value) >= 0
+    );
+    const score = Number(storedScore);
+    return Number.isFinite(score) && score >= 0 ? score : 0;
 }
 
 function updateHighScoreDisplay() {
