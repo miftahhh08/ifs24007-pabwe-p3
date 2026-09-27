@@ -96,10 +96,13 @@ function activateTab(tabName) {
         const active = button.dataset.tab === activeTab;
         button.classList.toggle("active", active);
         button.classList.toggle("text-slate-600", !active);
+        button.setAttribute("aria-selected", String(active));
     });
 
     document.querySelectorAll(".tab-panel").forEach((panel) => {
-        panel.classList.toggle("active", panel.id === activeTab);
+        const active = panel.id === activeTab;
+        panel.classList.toggle("active", active);
+        panel.setAttribute("aria-hidden", String(!active));
     });
 }
 
@@ -662,8 +665,9 @@ function renderQuizQuestion() {
 
     $("#quiz-score").textContent = `Skor: ${quizScore}`;
 
-    $("#quiz-progress-bar").style.width =
-        `${((currentQuestion + 1) / quizQuestions.length) * 100}%`;
+    const quizProgress = ((currentQuestion + 1) / quizQuestions.length) * 100;
+    $("#quiz-progress-bar").style.width = `${quizProgress}%`;
+    $("#quiz-progress-bar").setAttribute("aria-valuenow", String(Math.round(quizProgress)));
 
     $("#quiz-question-text").textContent = question.question;
     $("#quiz-options").innerHTML = "";

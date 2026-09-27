@@ -6,263 +6,29 @@
     <meta name="description" content="MimiMind Workspace - Expense Tracker, Bookmark Manager, dan Quiz App">
     <title>MimiMind Workspace - PABWE P3</title>
 
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    <script src="https://cdn.tailwindcss.com" defer></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
 
     <style>
-/* =========================================================
-   UI POLISH LAYER
-   Only presentation is changed here. Application JavaScript,
-   IDs, data attributes, forms, and DOM hooks remain intact.
-   ========================================================= */
-:root {
-    --primary: #7c3aed;
-    --primary-dark: #5b21b6;
-    --primary-soft: #f5f3ff;
-    --blue: #2563eb;
-    --green: #059669;
-    --red: #e11d48;
-    --amber: #d97706;
-    --ink: #172033;
-    --muted: #64748b;
-    --line: #e7eaf0;
-    --surface: #ffffff;
-    --bg: #f7f7fb;
-    --radius: 20px;
-}
-
-* { box-sizing: border-box; }
-html { scroll-behavior: smooth; }
-body {
-    font-family: "Inter", sans-serif;
-    color: var(--ink);
-    background:
-        radial-gradient(circle at 0% 0%, rgba(124,58,237,.10), transparent 30rem),
-        radial-gradient(circle at 100% 14%, rgba(37,99,235,.08), transparent 28rem),
-        var(--bg);
-}
-button, input, select, textarea { font: inherit; }
-button { -webkit-tap-highlight-color: transparent; }
-
-/* ---------- HERO ---------- */
-body > header {
-    position: relative;
-    overflow: hidden;
-    background: linear-gradient(135deg, #4c1d95 0%, #7c3aed 48%, #2563eb 100%) !important;
-    border: 0 !important;
-    color: #fff;
-    box-shadow: 0 18px 48px rgba(76,29,149,.20);
-}
-body > header::before,
-body > header::after {
-    content: "";
-    position: absolute;
-    border-radius: 999px;
-    pointer-events: none;
-    background: rgba(255,255,255,.10);
-}
-body > header::before { width: 250px; height: 250px; right: -80px; top: -120px; }
-body > header::after { width: 140px; height: 140px; right: 190px; bottom: -85px; }
-body > header > div { position: relative; z-index: 1; }
-body > header .text-violet-600 { color: #ede9fe !important; }
-body > header h1 { color: #fff !important; letter-spacing: -.035em; }
-body > header .text-slate-500 { color: rgba(255,255,255,.84) !important; }
-
-/* ---------- PAGE ---------- */
-main {
-    padding-top: 2rem !important;
-    padding-bottom: 3rem !important;
-}
-
-/* ---------- TABS ---------- */
-main > nav {
-    position: sticky;
-    top: 5.4rem;
-    z-index: 30;
-    padding: .55rem !important;
-    background: rgba(255,255,255,.92) !important;
-    border: 1px solid rgba(226,232,240,.95) !important;
-    border-radius: 18px !important;
-    box-shadow: 0 12px 32px rgba(15,23,42,.075) !important;
-    backdrop-filter: blur(14px);
-}
-.tab-button {
-    min-height: 48px;
-    border: 1px solid transparent;
-    color: #64748b !important;
-    background: transparent;
-}
-.tab-button:hover {
-    background: #f8fafc !important;
-    color: #334155 !important;
-}
-.tab-button.active {
-    color: #fff !important;
-    background: linear-gradient(135deg, #7c3aed, #6d28d9) !important;
-    box-shadow: 0 9px 20px rgba(124,58,237,.25) !important;
-}
-
-/* ---------- SECTION HEADINGS ---------- */
-.tab-panel > div:first-child h2 {
-    color: #111827 !important;
-    letter-spacing: -.025em;
-}
-.tab-panel > div:first-child p { color: #64748b !important; }
-
-/* ---------- CARDS ---------- */
-#expense > .bg-white,
-#bookmark > .bg-white,
-#quiz-start,
-#quiz-question,
-#quiz-result,
-main article.bg-white {
-    background: rgba(255,255,255,.97) !important;
-    border-color: var(--line) !important;
-    border-radius: var(--radius) !important;
-    box-shadow: 0 10px 30px rgba(15,23,42,.055) !important;
-}
-
-/* Summary cards become a clearer dashboard */
-#total-income, #total-expense, #balance { letter-spacing: -.025em; }
-#total-income { color: var(--green) !important; }
-#total-expense { color: var(--red) !important; }
-#balance { color: var(--primary) !important; }
-
-/* ---------- FORMS ---------- */
-input:not([type="hidden"]), select, textarea {
-    background: #fbfcfe;
-    border-color: #dce2ea !important;
-    transition: border-color .18s ease, box-shadow .18s ease, background .18s ease, transform .18s ease;
-}
-input:not([type="hidden"]):hover, select:hover, textarea:hover {
-    border-color: #c4b5fd !important;
-    background: #fff;
-}
-input:not([type="hidden"]):focus, select:focus, textarea:focus {
-    border-color: #8b5cf6 !important;
-    box-shadow: 0 0 0 4px rgba(139,92,246,.12) !important;
-    outline: none !important;
-    background: #fff;
-}
-.form-error {
-    color: #dc2626;
-    font-size: .82rem;
-    font-weight: 600;
-    margin-top: .45rem;
-}
-
-/* ---------- ACTION BUTTONS ---------- */
-button.bg-violet-600,
-button.bg-blue-600,
-button[type="submit"] {
-    border: 0;
-    box-shadow: 0 8px 18px rgba(124,58,237,.16);
-}
-button.bg-blue-600 { box-shadow: 0 8px 18px rgba(37,99,235,.16); }
-button.bg-violet-600:hover,
-button.bg-blue-600:hover,
-button[type="submit"]:hover {
-    transform: translateY(-1px);
-}
-
-/* ---------- FILTER AREAS ---------- */
-#expense-search, #expense-filter-type, #expense-filter-category, #expense-sort,
-#bookmark-search, #bookmark-sort {
-    min-height: 46px;
-}
-
-/* ---------- DYNAMIC DATA CARDS ---------- */
-#expense-list > article,
-#bookmark-list > article {
-    border-color: #e6eaf0 !important;
-    background: linear-gradient(180deg, #ffffff 0%, #fbfcfe 100%) !important;
-    border-radius: 16px !important;
-    box-shadow: 0 5px 16px rgba(15,23,42,.035);
-    transition: border-color .18s ease, box-shadow .18s ease, transform .18s ease;
-}
-#expense-list > article:hover,
-#bookmark-list > article:hover {
-    border-color: #c4b5fd !important;
-    box-shadow: 0 12px 26px rgba(124,58,237,.08);
-    transform: translateY(-1px);
-}
-
-/* ---------- QUIZ ---------- */
-#quiz-start, #quiz-question, #quiz-result {
-    overflow: hidden;
-    position: relative;
-}
-#quiz-start::before, #quiz-question::before, #quiz-result::before {
-    content: "";
-    position: absolute;
-    width: 190px;
-    height: 190px;
-    border-radius: 999px;
-    right: -95px;
-    top: -95px;
-    background: rgba(124,58,237,.055);
-    pointer-events: none;
-}
-.quiz-option {
-    border-width: 2px !important;
-    border-color: #e2e8f0 !important;
-    background: #fff !important;
-    border-radius: 15px !important;
-    transition: transform .16s ease, border-color .16s ease, background .16s ease, box-shadow .16s ease;
-}
-.quiz-option:hover {
-    border-color: #a78bfa !important;
-    background: #faf8ff !important;
-    transform: translateY(-1px);
-    box-shadow: 0 7px 18px rgba(124,58,237,.08);
-}
-.quiz-option.selected { border-color:#7c3aed !important; background:#f5f3ff !important; }
-.quiz-option.correct { border-color:#16a34a !important; background:#f0fdf4 !important; }
-.quiz-option.wrong { border-color:#dc2626 !important; background:#fef2f2 !important; }
-#quiz-progress-bar { box-shadow: 0 2px 8px rgba(124,58,237,.20); }
-
-/* ---------- MODALS ---------- */
-.modal {
-    display: none;
-    background: rgba(15,23,42,.62) !important;
-    backdrop-filter: blur(5px);
-}
-.modal.show { display:flex; }
-.modal > div {
-    border: 1px solid rgba(226,232,240,.92);
-    box-shadow: 0 25px 70px rgba(15,23,42,.25) !important;
-}
-.modal .border-b { border-color: #edf0f4 !important; }
-
-/* ---------- FOOTER ---------- */
-footer {
-    background: #fff !important;
-    border-color: #e7eaf0 !important;
-}
-
-/* ---------- MOBILE ---------- */
-@media (max-width: 640px) {
-    body > header h1 { font-size: 1.75rem !important; }
-    main { padding-top: 1.25rem !important; }
-    main > nav { top: .5rem; }
-    .tab-button { min-height: 44px; padding: .7rem .65rem !important; }
-    #expense-list > article, #bookmark-list > article { padding: 1rem !important; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-    *, *::before, *::after {
-        scroll-behavior: auto !important;
-        transition-duration: .01ms !important;
-        animation-duration: .01ms !important;
-    }
-}
-</style>
+        * { box-sizing: border-box; }
+        body { font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+        .tab-button.active { background:#7c3aed;color:white;box-shadow:0 4px 12px rgba(124,58,237,.25); }
+        .tab-panel { display:none; }
+        .tab-panel.active { display:block; }
+        .modal { display:none; }
+        .modal.show { display:flex; }
+        .quiz-option.selected { border-color:#7c3aed;background:#f5f3ff; }
+        .quiz-option.correct { border-color:#16a34a;background:#f0fdf4; }
+        .quiz-option.wrong { border-color:#dc2626;background:#fef2f2; }
+        .form-error { color:#dc2626; font-size:.875rem; font-weight:600; margin-top:.75rem; }
+        .skip-link { position:absolute; left:-9999px; top:auto; }
+        .skip-link:focus { left:1rem; top:1rem; z-index:100; padding:.75rem 1rem; background:#fff; color:#1e1b4b; border-radius:.75rem; box-shadow:0 4px 14px rgba(0,0,0,.15); }
+    </style>
 </head>
 
 <body class="bg-slate-50 text-slate-800 min-h-screen">
+<a class="skip-link" href="#main-content">Lewati ke konten utama</a>
 
 <header class="bg-white border-b border-slate-200 sticky top-0 z-40">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 py-4">
@@ -279,24 +45,25 @@ footer {
     </div>
 </header>
 
-<main class="max-w-7xl mx-auto px-4 sm:px-6 py-6">
+<main id="main-content" class="max-w-7xl mx-auto px-4 sm:px-6 py-6">
 
 <nav aria-label="Navigasi fitur" class="bg-white rounded-2xl border border-slate-200 p-2 mb-6 shadow-sm">
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
-        <button type="button" class="tab-button active flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-semibold text-sm transition" data-tab="expense">
+    <div class="sr-only" id="tab-description">Pilih salah satu fitur aplikasi.</div>
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2" role="tablist" aria-describedby="tab-description">
+        <button role="tab" aria-selected="true" aria-controls="expense" type="button" class="tab-button active flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-semibold text-sm transition" id="tab-expense" data-tab="expense">
             <i class="ti ti-wallet"></i> Expense Tracker
         </button>
-        <button type="button" class="tab-button flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-semibold text-sm text-slate-600 hover:bg-slate-100 transition" data-tab="bookmark">
+        <button role="tab" aria-selected="false" aria-controls="bookmark" type="button" class="tab-button flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-semibold text-sm text-slate-600 hover:bg-slate-100 transition" id="tab-bookmark" data-tab="bookmark">
             <i class="ti ti-bookmark"></i> Bookmark Manager
         </button>
-        <button type="button" class="tab-button flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-semibold text-sm text-slate-600 hover:bg-slate-100 transition" data-tab="quiz">
+        <button role="tab" aria-selected="false" aria-controls="quiz" type="button" class="tab-button flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-semibold text-sm text-slate-600 hover:bg-slate-100 transition" id="tab-quiz" data-tab="quiz">
             <i class="ti ti-brain"></i> Quiz Interaktif
         </button>
     </div>
 </nav>
 
 <!-- EXPENSE -->
-<section id="expense" class="tab-panel active">
+<section id="expense" role="tabpanel" aria-labelledby="tab-expense" class="tab-panel active">
     <div class="mb-6">
         <h2 class="text-2xl font-bold text-slate-900">Catatan Pengeluaran Harian</h2>
         <p class="text-slate-500 mt-1">Catat pemasukan dan pengeluaran agar kondisi keuanganmu lebih mudah dipantau.</p>
@@ -399,7 +166,7 @@ footer {
 </section>
 
 <!-- BOOKMARK -->
-<section id="bookmark" class="tab-panel">
+<section id="bookmark" role="tabpanel" aria-labelledby="tab-bookmark" class="tab-panel">
     <div class="mb-6">
         <h2 class="text-2xl font-bold text-slate-900">Bookmark / Link Manager</h2>
         <p class="text-slate-500 mt-1">Simpan dan kelola tautan penting yang sering kamu gunakan.</p>
@@ -459,7 +226,7 @@ footer {
 </section>
 
 <!-- QUIZ -->
-<section id="quiz" class="tab-panel">
+<section id="quiz" role="tabpanel" aria-labelledby="tab-quiz" class="tab-panel">
     <div class="mb-6">
         <h2 class="text-2xl font-bold text-slate-900">Kuis Interaktif</h2>
         <p class="text-slate-500 mt-1">Uji pengetahuanmu tentang HTML, CSS, dan JavaScript dasar.</p>
@@ -485,7 +252,7 @@ footer {
             <span id="quiz-score" class="px-3 py-1 rounded-full bg-violet-100 text-violet-700 text-sm font-semibold">Skor: 0</span>
         </div>
         <div class="w-full bg-slate-100 rounded-full h-2 mb-8">
-            <div id="quiz-progress-bar" class="bg-violet-600 h-2 rounded-full transition-all duration-300" style="width:20%"></div>
+            <div id="quiz-progress-bar" role="progressbar" aria-label="Kemajuan kuis" aria-valuemin="0" aria-valuemax="100" aria-valuenow="20" class="bg-violet-600 h-2 rounded-full transition-all duration-300" style="width:20%"></div>
         </div>
         <h3 id="quiz-question-text" class="text-xl sm:text-2xl font-bold text-slate-900 leading-relaxed"></h3>
         <div id="quiz-options" class="grid grid-cols-1 gap-3 mt-6"></div>
@@ -521,16 +288,16 @@ footer {
 <footer class="border-t border-slate-200 bg-white mt-10">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 py-6 text-center">
         <p class="text-sm text-slate-500">© 2026 MimiMind Workspace • PABWE Praktikum 3</p>
-        <p class="text-xs text-slate-400 mt-1">HTML5 • Tailwind CSS • JavaScript DOM • LocalStorage</p>
+        <p class="text-xs text-slate-600 mt-1">HTML5 • Tailwind CSS • JavaScript DOM • LocalStorage</p>
     </div>
 </footer>
 
 <!-- EXPENSE EDIT MODAL -->
-<div id="expense-modal" class="modal fixed inset-0 z-50 items-center justify-center bg-black/50 p-4" aria-hidden="true">
+<div id="expense-modal" class="modal fixed inset-0 z-50 items-center justify-center bg-black/50 p-4" role="dialog" aria-modal="true" aria-labelledby="expense-modal-title" aria-describedby="expense-modal-description" aria-hidden="true">
     <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg">
         <div class="p-5 border-b border-slate-200 flex items-center justify-between">
-            <div><h3 class="text-lg font-bold">Ubah Transaksi</h3><p class="text-sm text-slate-500">Perbarui informasi transaksi.</p></div>
-            <button type="button" class="close-modal w-9 h-9 rounded-lg hover:bg-slate-100" data-modal="expense-modal"><i class="ti ti-x"></i></button>
+            <div><h3 id="expense-modal-title" class="text-lg font-bold">Ubah Transaksi</h3><p id="expense-modal-description" class="text-sm text-slate-500">Perbarui informasi transaksi.</p></div>
+            <button type="button" class="close-modal w-9 h-9 rounded-lg hover:bg-slate-100" data-modal="expense-modal" aria-label="Tutup dialog ubah transaksi" title="Tutup dialog"><i class="ti ti-x"></i></button>
         </div>
         <form id="expense-edit-form" class="p-5">
             <input type="hidden" id="edit-expense-id">
@@ -551,11 +318,11 @@ footer {
 </div>
 
 <!-- BOOKMARK EDIT MODAL -->
-<div id="bookmark-modal" class="modal fixed inset-0 z-50 items-center justify-center bg-black/50 p-4" aria-hidden="true">
+<div id="bookmark-modal" class="modal fixed inset-0 z-50 items-center justify-center bg-black/50 p-4" role="dialog" aria-modal="true" aria-labelledby="bookmark-modal-title" aria-describedby="bookmark-modal-description" aria-hidden="true">
     <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg">
         <div class="p-5 border-b border-slate-200 flex items-center justify-between">
-            <div><h3 class="text-lg font-bold">Ubah Bookmark</h3><p class="text-sm text-slate-500">Perbarui informasi bookmark.</p></div>
-            <button type="button" class="close-modal w-9 h-9 rounded-lg hover:bg-slate-100" data-modal="bookmark-modal"><i class="ti ti-x"></i></button>
+            <div><h3 id="bookmark-modal-title" class="text-lg font-bold">Ubah Bookmark</h3><p id="bookmark-modal-description" class="text-sm text-slate-500">Perbarui informasi bookmark.</p></div>
+            <button type="button" class="close-modal w-9 h-9 rounded-lg hover:bg-slate-100" data-modal="bookmark-modal" aria-label="Tutup dialog ubah bookmark" title="Tutup dialog"><i class="ti ti-x"></i></button>
         </div>
         <form id="bookmark-edit-form" class="p-5">
             <input type="hidden" id="edit-bookmark-id">
@@ -575,10 +342,10 @@ footer {
 </div>
 
 <!-- CUSTOM DELETE MODAL -->
-<div id="delete-modal" class="modal fixed inset-0 z-50 items-center justify-center bg-black/50 p-4" aria-hidden="true">
+<div id="delete-modal" class="modal fixed inset-0 z-50 items-center justify-center bg-black/50 p-4" role="dialog" aria-modal="true" aria-labelledby="delete-modal-title" aria-describedby="delete-message" aria-hidden="true">
     <div class="bg-white rounded-2xl shadow-xl w-full max-w-md p-6">
         <div class="w-12 h-12 rounded-xl bg-red-100 text-red-600 flex items-center justify-center mb-4"><i class="ti ti-trash text-2xl"></i></div>
-        <h3 class="text-xl font-bold">Hapus data?</h3>
+        <h3 id="delete-modal-title" class="text-xl font-bold">Hapus data?</h3>
         <p id="delete-message" class="text-slate-500 mt-2">Data yang dihapus tidak dapat dikembalikan.</p>
         <div class="flex justify-end gap-3 mt-6">
             <button type="button" class="close-modal px-4 py-3 rounded-xl border border-slate-300 font-semibold" data-modal="delete-modal">Batal</button>
