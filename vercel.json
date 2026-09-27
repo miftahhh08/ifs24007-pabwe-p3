@@ -1,0 +1,7 @@
+{
+  "rewrites": [
+    { "source": "/expense", "destination": "/index.html" },
+    { "source": "/bookmark", "destination": "/index.html" },
+    { "source": "/quiz", "destination": "/index.html" }
+  ]
+}
