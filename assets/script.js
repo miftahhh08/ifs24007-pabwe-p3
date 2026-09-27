@@ -48,7 +48,7 @@ function getTabFromURL() {
 function updateTabURL(tabName) {
     const url = new URL(window.location.href);
     url.searchParams.set("tab", tabName);
-    window.history.replaceState({ tab: tabName }, "", url);
+    window.history.pushState({ tab: tabName }, "", url);
 }
 
 function activateTab(tabName, updateURL = true) {
@@ -387,15 +387,15 @@ function validateBookmark(title, url, category) {
     return "";
 }
 
-function showBookmarkError(message) {
-    const errorElement = $("#bookmark-form-error");
+function showBookmarkError(message, errorSelector = "#bookmark-form-error") {
+    const errorElement = $(errorSelector);
     errorElement.textContent = message;
     errorElement.classList.toggle("hidden", !message);
     errorElement.setAttribute("aria-hidden", String(!message));
 }
 
-function clearBookmarkError() {
-    showBookmarkError("");
+function clearBookmarkError(errorSelector = "#bookmark-form-error") {
+    showBookmarkError("", errorSelector);
 }
 
 $("#bookmark-form").addEventListener("submit", (event) => {
@@ -529,10 +529,7 @@ $("#bookmark-edit-form").addEventListener("submit", (event) => {
     const note = $("#edit-bookmark-note").value.trim();
     const validationMessage = validateBookmark(title, url, category);
 
-    const errorElement = $("#edit-bookmark-form-error");
-    errorElement.textContent = validationMessage;
-    errorElement.classList.toggle("hidden", !validationMessage);
-    errorElement.setAttribute("aria-hidden", String(!validationMessage));
+    showBookmarkError(validationMessage, "#edit-bookmark-form-error");
 
     if (validationMessage) return;
 
@@ -543,6 +540,7 @@ $("#bookmark-edit-form").addEventListener("submit", (event) => {
 
     saveBookmarks();
     renderBookmarks();
+    clearBookmarkError("#edit-bookmark-form-error");
     closeModal("bookmark-modal");
 });
 

@@ -61,7 +61,7 @@ Project ini dibuat berdasarkan studi kasus Praktikum 3. Aplikasi menggunakan sat
 - [x] Tiga fitur dipisahkan menggunakan tab.
 - [x] Hanya satu panel tab aktif.
 - [x] Tab aktif disimpan dan dipulihkan melalui query URL `?tab=expense|bookmark|quiz`.
-- [x] Perubahan tab menggunakan `URLSearchParams` dan `history.replaceState`, tanpa menyimpan state tab pada LocalStorage.
+- [x] Perubahan tab menggunakan `URLSearchParams` dan `history.pushState`, tanpa menyimpan state tab pada LocalStorage.
 - [x] Key LocalStorage dipisahkan untuk expense, bookmark, dan quiz high score.
 - [x] JavaScript dikelompokkan dengan komentar per fitur.
 
