@@ -62,6 +62,7 @@ Project ini dibuat berdasarkan studi kasus Praktikum 3. Aplikasi menggunakan sat
 - [x] Hanya satu panel tab aktif.
 - [x] Tab aktif disimpan dan dipulihkan melalui query URL `?tab=expense|bookmark|quiz`.
 - [x] Perubahan tab menggunakan `URLSearchParams`, `history.pushState`, dan `popstate`, tanpa menyimpan state tab pada LocalStorage.
+- [x] Sinkronisasi tab saat inisialisasi menggunakan `history.replaceState` agar tidak menambah entri history yang tidak diperlukan.
 - [x] Data LocalStorage dimuat melalui helper `loadFromStorage()` dengan `try/catch` dan validasi tipe data agar storage yang rusak tidak menghentikan aplikasi.
 - [x] Validasi bookmark menggunakan objek `URL`, hanya menerima protokol `http:`/`https:` dan hostname yang valid.
 - [x] Pesan validasi form memakai helper `showFormError()` bersama agar penanganan error konsisten pada Expense dan Bookmark.

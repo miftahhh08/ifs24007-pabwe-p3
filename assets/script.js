@@ -76,13 +76,20 @@ function getTabFromURL() {
     return VALID_TABS.includes(tab) ? tab : "expense";
 }
 
-function updateTabURL(tabName) {
+function updateTabURL(tabName, replace = false) {
     const url = new URL(window.location.href);
     url.searchParams.set("tab", tabName);
-    window.history.pushState({ tab: tabName }, "", url);
+
+    // replaceState dipakai saat inisialisasi agar tidak membuat history baru.
+    // pushState dipakai saat pengguna benar-benar berpindah tab.
+    if (replace) {
+        window.history.replaceState({ tab: tabName }, "", url);
+    } else {
+        window.history.pushState({ tab: tabName }, "", url);
+    }
 }
 
-function activateTab(tabName, updateURL = true) {
+function activateTab(tabName) {
     const activeTab = VALID_TABS.includes(tabName) ? tabName : "expense";
 
     document.querySelectorAll(".tab-button").forEach((button) => {
@@ -94,18 +101,20 @@ function activateTab(tabName, updateURL = true) {
     document.querySelectorAll(".tab-panel").forEach((panel) => {
         panel.classList.toggle("active", panel.id === activeTab);
     });
-
-    if (updateURL) {
-        updateTabURL(activeTab);
-    }
 }
 
+// Tab click membuat history baru agar tombol Back/Forward browser dapat digunakan.
 document.querySelectorAll(".tab-button").forEach((button) => {
-    button.addEventListener("click", () => activateTab(button.dataset.tab));
+    button.addEventListener("click", () => {
+        const tabName = VALID_TABS.includes(button.dataset.tab) ? button.dataset.tab : "expense";
+        activateTab(tabName);
+        updateTabURL(tabName);
+    });
 });
 
+// Back/Forward browser hanya mengubah panel berdasarkan query URL.
 window.addEventListener("popstate", () => {
-    activateTab(getTabFromURL(), false);
+    activateTab(getTabFromURL());
 });
 
 
@@ -760,7 +769,10 @@ function initializeApplication() {
     renderBookmarks();
     updateHighScoreDisplay();
 
-    activateTab(getTabFromURL());
+    // Sinkronisasi awal URL memakai replaceState agar tidak menambah history baru.
+    const initialTab = getTabFromURL();
+    activateTab(initialTab);
+    updateTabURL(initialTab, true);
 }
 
 initializeApplication();
