@@ -65,6 +65,45 @@ function showFormError(selector, message) {
     errorElement.setAttribute("aria-hidden", String(!message));
 }
 
+function clearFormError(selector) {
+    showFormError(selector, "");
+}
+
+function getLocalDateInputValue(date = new Date()) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+}
+
+function parseAmount(value) {
+    const rawValue = String(value).trim().replace(/\s/g, "");
+    if (!rawValue) return NaN;
+
+    let normalizedValue = rawValue;
+
+    if (rawValue.includes(",") && rawValue.includes(".")) {
+        const commaIndex = rawValue.lastIndexOf(",");
+        const dotIndex = rawValue.lastIndexOf(".");
+
+        if (commaIndex > dotIndex) {
+            normalizedValue = rawValue.replace(/\./g, "").replace(",", ".");
+        } else {
+            normalizedValue = rawValue.replace(/,/g, "");
+        }
+    } else if (rawValue.includes(",")) {
+        normalizedValue = rawValue.replace(",", ".");
+    }
+
+    const amount = Number(normalizedValue);
+    return Number.isFinite(amount) ? amount : NaN;
+}
+
+function sortItems(items, sortValue, comparators, fallbackComparator) {
+    const comparator = comparators[sortValue] || fallbackComparator;
+    return items.sort(comparator);
+}
+
 
 /* ==================== TAB ==================== */
 
@@ -103,13 +142,15 @@ function activateTab(tabName) {
     });
 }
 
-// Tab click membuat history baru agar tombol Back/Forward browser dapat digunakan.
-document.querySelectorAll(".tab-button").forEach((button) => {
-    button.addEventListener("click", () => {
-        const tabName = VALID_TABS.includes(button.dataset.tab) ? button.dataset.tab : "expense";
-        activateTab(tabName);
-        updateTabURL(tabName);
-    });
+// Satu handler pada navigasi tab menjaga event tetap DRY dan terpusat.
+const tabNavigation = $("nav[aria-label=\"Navigasi fitur\"]");
+tabNavigation.addEventListener("click", (event) => {
+    const button = event.target.closest(".tab-button");
+    if (!button) return;
+
+    const tabName = VALID_TABS.includes(button.dataset.tab) ? button.dataset.tab : "expense";
+    activateTab(tabName);
+    updateTabURL(tabName);
 });
 
 // Back/Forward browser hanya mengubah panel berdasarkan query URL.
@@ -225,7 +266,7 @@ expenseForm.addEventListener("submit", (event) => {
 
     const title = $("#expense-title").value.trim();
     const category = $("#expense-category").value;
-    const amount = Number($("#expense-amount").value);
+    const amount = parseAmount($("#expense-amount").value);
     const type = $("#expense-type").value;
     const date = $("#expense-date").value;
 
@@ -249,7 +290,7 @@ expenseForm.addEventListener("submit", (event) => {
     updateExpenseSummary();
     expenseForm.reset();
 
-    $("#expense-date").value = new Date().toISOString().split("T")[0];
+    $("#expense-date").value = getLocalDateInputValue();
 });
 
 function getFilteredExpenses() {
@@ -264,26 +305,20 @@ function getFilteredExpenses() {
         return matchTitle && matchType && matchCategory;
     });
 
-    switch (expenseSort.value) {
-        case "oldest":
-            result.sort((a, b) => new Date(a.date) - new Date(b.date));
-            break;
-        case "highest":
-            result.sort((a, b) => b.amount - a.amount);
-            break;
-        case "lowest":
-            result.sort((a, b) => a.amount - b.amount);
-            break;
-        case "title":
-            result.sort((a, b) => a.title.localeCompare(b.title, "id"));
-            break;
-        default:
-            result.sort((a, b) => new Date(b.date) - new Date(a.date));
-    }
-
-    return result;
+    return sortItems(
+        result,
+        expenseSort.value,
+        {
+            oldest: (a, b) => new Date(a.date) - new Date(b.date),
+            highest: (a, b) => b.amount - a.amount,
+            lowest: (a, b) => a.amount - b.amount,
+            title: (a, b) => a.title.localeCompare(b.title, "id")
+        },
+        (a, b) => new Date(b.date) - new Date(a.date)
+    );
 }
 
+// Render daftar Expense berdasarkan pencarian, filter, dan sorting aktif.
 function renderExpenses() {
     const data = getFilteredExpenses();
     expenseList.innerHTML = "";
@@ -377,7 +412,7 @@ $("#expense-edit-form").addEventListener("submit", (event) => {
     const id = $("#edit-expense-id").value;
     const title = $("#edit-expense-title").value.trim();
     const category = $("#edit-expense-category").value;
-    const amount = Number($("#edit-expense-amount").value);
+    const amount = parseAmount($("#edit-expense-amount").value);
     const type = $("#edit-expense-type").value;
     const date = $("#edit-expense-date").value;
 
@@ -429,7 +464,7 @@ function showBookmarkError(message, errorSelector = "#bookmark-form-error") {
 }
 
 function clearBookmarkError(errorSelector = "#bookmark-form-error") {
-    showFormError(errorSelector, "");
+    clearFormError(errorSelector);
 }
 
 $("#bookmark-form").addEventListener("submit", (event) => {
@@ -470,20 +505,18 @@ function getFilteredBookmarks() {
         item.category.toLowerCase().includes(search)
     );
 
-    switch ($("#bookmark-sort").value) {
-        case "az":
-            result.sort((a, b) => a.title.localeCompare(b.title, "id"));
-            break;
-        case "za":
-            result.sort((a, b) => b.title.localeCompare(a.title, "id"));
-            break;
-        default:
-            result.sort((a, b) => b.createdAt - a.createdAt);
-    }
-
-    return result;
+    return sortItems(
+        result,
+        $("#bookmark-sort").value,
+        {
+            az: (a, b) => a.title.localeCompare(b.title, "id"),
+            za: (a, b) => b.title.localeCompare(a.title, "id")
+        },
+        (a, b) => b.createdAt - a.createdAt
+    );
 }
 
+// Render daftar Bookmark berdasarkan pencarian dan sorting aktif.
 function renderBookmarks() {
     const data = getFilteredBookmarks();
     const list = $("#bookmark-list");
@@ -648,6 +681,7 @@ function startQuiz() {
     renderQuizQuestion();
 }
 
+// Render satu soal Quiz dan reset state pilihan untuk soal aktif.
 function renderQuizQuestion() {
     const question = quizQuestions[currentQuestion];
 
@@ -761,7 +795,7 @@ $("#next-question").addEventListener("click", () => {
 /* ==================== INITIALIZATION ==================== */
 
 function initializeApplication() {
-    const today = new Date().toISOString().split("T")[0];
+    const today = getLocalDateInputValue();
     $("#expense-date").value = today;
 
     renderExpenses();

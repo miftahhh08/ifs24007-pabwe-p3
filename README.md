@@ -27,6 +27,7 @@ Project ini dibuat berdasarkan studi kasus Praktikum 3. Aplikasi menggunakan sat
 - [x] CRUD lengkap.
 - [x] Edit dan hapus menggunakan modal.
 - [x] Validasi field wajib dan jumlah harus > 0 dengan pesan error inline.
+- [x] Jumlah mendukung bilangan desimal dengan titik maupun koma, misalnya `25000.50` atau `25000,50`.
 - [x] Empty state.
 - [x] Search berdasarkan judul.
 - [x] Filter berdasarkan tipe dan kategori.
@@ -68,6 +69,8 @@ Project ini dibuat berdasarkan studi kasus Praktikum 3. Aplikasi menggunakan sat
 - [x] Pesan validasi form memakai helper `showFormError()` bersama agar penanganan error konsisten pada Expense dan Bookmark.
 - [x] Key LocalStorage dipisahkan untuk expense, bookmark, dan quiz high score.
 - [x] JavaScript dikelompokkan dengan komentar per fitur.
+- [x] Nilai tanggal default menggunakan tanggal lokal browser agar tidak bergeser karena konversi UTC.
+- [x] Sorting menggunakan helper `sortItems()` untuk mengurangi pengulangan comparator antar fitur.
 
 ## Struktur
 ```text
