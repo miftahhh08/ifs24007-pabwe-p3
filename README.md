@@ -27,7 +27,6 @@ Project ini dibuat berdasarkan studi kasus Praktikum 3. Aplikasi menggunakan sat
 - [x] CRUD lengkap.
 - [x] Edit dan hapus menggunakan modal.
 - [x] Validasi field wajib dan jumlah harus > 0 dengan pesan error inline.
-- [x] Jumlah mendukung bilangan desimal dengan titik maupun koma, misalnya `25000.50` atau `25000,50`.
 - [x] Empty state.
 - [x] Search berdasarkan judul.
 - [x] Filter berdasarkan tipe dan kategori.
@@ -62,15 +61,9 @@ Project ini dibuat berdasarkan studi kasus Praktikum 3. Aplikasi menggunakan sat
 - [x] Tiga fitur dipisahkan menggunakan tab.
 - [x] Hanya satu panel tab aktif.
 - [x] Tab aktif disimpan dan dipulihkan melalui query URL `?tab=expense|bookmark|quiz`.
-- [x] Perubahan tab menggunakan `URLSearchParams`, `history.pushState`, dan `popstate`, tanpa menyimpan state tab pada LocalStorage.
-- [x] Sinkronisasi tab saat inisialisasi menggunakan `history.replaceState` agar tidak menambah entri history yang tidak diperlukan.
-- [x] Data LocalStorage dimuat melalui helper `loadFromStorage()` dengan `try/catch` dan validasi tipe data agar storage yang rusak tidak menghentikan aplikasi.
-- [x] Validasi bookmark menggunakan objek `URL`, hanya menerima protokol `http:`/`https:` dan hostname yang valid.
-- [x] Pesan validasi form memakai helper `showFormError()` bersama agar penanganan error konsisten pada Expense dan Bookmark.
+- [x] Tab dibaca dari `URLSearchParams`; klik tab memakai `history.pushState`, sedangkan sinkronisasi awal memakai `history.replaceState` agar tidak menambah history; tombol Back/Forward ditangani `popstate`.
 - [x] Key LocalStorage dipisahkan untuk expense, bookmark, dan quiz high score.
 - [x] JavaScript dikelompokkan dengan komentar per fitur.
-- [x] Nilai tanggal default menggunakan tanggal lokal browser agar tidak bergeser karena konversi UTC.
-- [x] Sorting menggunakan helper `sortItems()` untuk mengurangi pengulangan comparator antar fitur.
 
 ## Struktur
 ```text

@@ -104,7 +104,7 @@
                 </div>
                 <div>
                     <label for="expense-amount" class="block text-sm font-semibold mb-2">Jumlah</label>
-                    <input id="expense-amount" type="text" inputmode="decimal" placeholder="Contoh: 25000 atau 25000,50" required class="w-full px-4 py-3 border border-slate-300 rounded-xl outline-none focus:ring-2 focus:ring-violet-500">
+                    <input id="expense-amount" type="number" min="1" step="1" placeholder="Contoh: 25000" required class="w-full px-4 py-3 border border-slate-300 rounded-xl outline-none focus:ring-2 focus:ring-violet-500">
                 </div>
                 <div>
                     <label for="expense-type" class="block text-sm font-semibold mb-2">Tipe</label>
@@ -302,7 +302,7 @@
             <div class="space-y-4">
                 <div><label for="edit-expense-title" class="block text-sm font-semibold mb-2">Judul</label><input id="edit-expense-title" type="text" required class="w-full px-4 py-3 border border-slate-300 rounded-xl"></div>
                 <div><label for="edit-expense-category" class="block text-sm font-semibold mb-2">Kategori</label><select id="edit-expense-category" required class="w-full px-4 py-3 border border-slate-300 rounded-xl"><option value="">Pilih kategori</option><option>Makanan</option><option>Transportasi</option><option>Kuliah</option><option>Belanja</option><option>Gaji</option><option>Bonus</option><option>Lainnya</option></select></div>
-                <div><label for="edit-expense-amount" class="block text-sm font-semibold mb-2">Jumlah</label><input id="edit-expense-amount" type="text" inputmode="decimal" required class="w-full px-4 py-3 border border-slate-300 rounded-xl"></div>
+                <div><label for="edit-expense-amount" class="block text-sm font-semibold mb-2">Jumlah</label><input id="edit-expense-amount" type="number" min="1" required class="w-full px-4 py-3 border border-slate-300 rounded-xl"></div>
                 <div><label for="edit-expense-type" class="block text-sm font-semibold mb-2">Tipe</label><select id="edit-expense-type" required class="w-full px-4 py-3 border border-slate-300 rounded-xl"><option>Pemasukan</option><option>Pengeluaran</option></select></div>
                 <div><label for="edit-expense-date" class="block text-sm font-semibold mb-2">Tanggal</label><input id="edit-expense-date" type="date" required class="w-full px-4 py-3 border border-slate-300 rounded-xl"></div>
             </div>

@@ -32,30 +32,6 @@ const escapeHTML = (value) => {
     return div.innerHTML;
 };
 
-function isValidURL(value) {
-    try {
-        const parsedURL = new URL(value.trim());
-        return (
-            (parsedURL.protocol === "http:" || parsedURL.protocol === "https:") &&
-            Boolean(parsedURL.hostname)
-        );
-    } catch {
-        return false;
-    }
-}
-
-function loadFromStorage(key, fallback = [], validator = () => true) {
-    try {
-        const storedValue = localStorage.getItem(key);
-        if (!storedValue) return fallback;
-
-        const parsedValue = JSON.parse(storedValue);
-        return validator(parsedValue) ? parsedValue : fallback;
-    } catch {
-        return fallback;
-    }
-}
-
 function showFormError(selector, message) {
     const errorElement = $(selector);
     if (!errorElement) return;
@@ -65,44 +41,7 @@ function showFormError(selector, message) {
     errorElement.setAttribute("aria-hidden", String(!message));
 }
 
-function clearFormError(selector) {
-    showFormError(selector, "");
-}
-
-function getLocalDateInputValue(date = new Date()) {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const day = String(date.getDate()).padStart(2, "0");
-    return `${year}-${month}-${day}`;
-}
-
-function parseAmount(value) {
-    const rawValue = String(value).trim().replace(/\s/g, "");
-    if (!rawValue) return NaN;
-
-    let normalizedValue = rawValue;
-
-    if (rawValue.includes(",") && rawValue.includes(".")) {
-        const commaIndex = rawValue.lastIndexOf(",");
-        const dotIndex = rawValue.lastIndexOf(".");
-
-        if (commaIndex > dotIndex) {
-            normalizedValue = rawValue.replace(/\./g, "").replace(",", ".");
-        } else {
-            normalizedValue = rawValue.replace(/,/g, "");
-        }
-    } else if (rawValue.includes(",")) {
-        normalizedValue = rawValue.replace(",", ".");
-    }
-
-    const amount = Number(normalizedValue);
-    return Number.isFinite(amount) ? amount : NaN;
-}
-
-function sortItems(items, sortValue, comparators, fallbackComparator) {
-    const comparator = comparators[sortValue] || fallbackComparator;
-    return items.sort(comparator);
-}
+const isValidURL = (url) => /^https?:\/\/[^\s]+$/i.test(url.trim());
 
 
 /* ==================== TAB ==================== */
@@ -119,8 +58,6 @@ function updateTabURL(tabName, replace = false) {
     const url = new URL(window.location.href);
     url.searchParams.set("tab", tabName);
 
-    // replaceState dipakai saat inisialisasi agar tidak membuat history baru.
-    // pushState dipakai saat pengguna benar-benar berpindah tab.
     if (replace) {
         window.history.replaceState({ tab: tabName }, "", url);
     } else {
@@ -142,22 +79,17 @@ function activateTab(tabName) {
     });
 }
 
-// Satu handler pada navigasi tab menjaga event tetap DRY dan terpusat.
-const tabNavigation = $("nav[aria-label=\"Navigasi fitur\"]");
-tabNavigation.addEventListener("click", (event) => {
-    const button = event.target.closest(".tab-button");
-    if (!button) return;
-
-    const tabName = VALID_TABS.includes(button.dataset.tab) ? button.dataset.tab : "expense";
-    activateTab(tabName);
-    updateTabURL(tabName);
+document.querySelectorAll(".tab-button").forEach((button) => {
+    button.addEventListener("click", () => {
+        const tabName = VALID_TABS.includes(button.dataset.tab) ? button.dataset.tab : "expense";
+        activateTab(tabName);
+        updateTabURL(tabName);
+    });
 });
 
-// Back/Forward browser hanya mengubah panel berdasarkan query URL.
 window.addEventListener("popstate", () => {
     activateTab(getTabFromURL());
 });
-
 
 /* ==================== MODAL ==================== */
 
@@ -232,7 +164,7 @@ $("#confirm-delete").addEventListener("click", () => {
 
 const EXPENSE_KEY = "mimimind_expenses";
 
-let expenses = loadFromStorage(EXPENSE_KEY, [], Array.isArray);
+let expenses = JSON.parse(localStorage.getItem(EXPENSE_KEY)) || [];
 
 const expenseForm = $("#expense-form");
 const expenseList = $("#expense-list");
@@ -257,21 +189,18 @@ function validateExpense(title, category, amount, type, date) {
     return "";
 }
 
-function showExpenseError(elementId, message) {
-    showFormError(`#${elementId}`, message);
-}
 
 expenseForm.addEventListener("submit", (event) => {
     event.preventDefault();
 
     const title = $("#expense-title").value.trim();
     const category = $("#expense-category").value;
-    const amount = parseAmount($("#expense-amount").value);
+    const amount = Number($("#expense-amount").value);
     const type = $("#expense-type").value;
     const date = $("#expense-date").value;
 
     const validationMessage = validateExpense(title, category, amount, type, date);
-    showExpenseError("expense-form-error", validationMessage);
+    showFormError("#expense-form-error", validationMessage);
 
     if (validationMessage) return;
 
@@ -290,7 +219,7 @@ expenseForm.addEventListener("submit", (event) => {
     updateExpenseSummary();
     expenseForm.reset();
 
-    $("#expense-date").value = getLocalDateInputValue();
+    $("#expense-date").value = new Date().toISOString().split("T")[0];
 });
 
 function getFilteredExpenses() {
@@ -305,20 +234,26 @@ function getFilteredExpenses() {
         return matchTitle && matchType && matchCategory;
     });
 
-    return sortItems(
-        result,
-        expenseSort.value,
-        {
-            oldest: (a, b) => new Date(a.date) - new Date(b.date),
-            highest: (a, b) => b.amount - a.amount,
-            lowest: (a, b) => a.amount - b.amount,
-            title: (a, b) => a.title.localeCompare(b.title, "id")
-        },
-        (a, b) => new Date(b.date) - new Date(a.date)
-    );
+    switch (expenseSort.value) {
+        case "oldest":
+            result.sort((a, b) => new Date(a.date) - new Date(b.date));
+            break;
+        case "highest":
+            result.sort((a, b) => b.amount - a.amount);
+            break;
+        case "lowest":
+            result.sort((a, b) => a.amount - b.amount);
+            break;
+        case "title":
+            result.sort((a, b) => a.title.localeCompare(b.title, "id"));
+            break;
+        default:
+            result.sort((a, b) => new Date(b.date) - new Date(a.date));
+    }
+
+    return result;
 }
 
-// Render daftar Expense berdasarkan pencarian, filter, dan sorting aktif.
 function renderExpenses() {
     const data = getFilteredExpenses();
     expenseList.innerHTML = "";
@@ -412,12 +347,12 @@ $("#expense-edit-form").addEventListener("submit", (event) => {
     const id = $("#edit-expense-id").value;
     const title = $("#edit-expense-title").value.trim();
     const category = $("#edit-expense-category").value;
-    const amount = parseAmount($("#edit-expense-amount").value);
+    const amount = Number($("#edit-expense-amount").value);
     const type = $("#edit-expense-type").value;
     const date = $("#edit-expense-date").value;
 
     const validationMessage = validateExpense(title, category, amount, type, date);
-    showExpenseError("edit-expense-form-error", validationMessage);
+    showFormError("#edit-expense-form-error", validationMessage);
 
     if (validationMessage) return;
 
@@ -441,7 +376,7 @@ $("#expense-edit-form").addEventListener("submit", (event) => {
 
 const BOOKMARK_KEY = "mimimind_bookmarks";
 
-let bookmarks = loadFromStorage(BOOKMARK_KEY, [], Array.isArray);
+let bookmarks = JSON.parse(localStorage.getItem(BOOKMARK_KEY)) || [];
 
 function saveBookmarks() {
     localStorage.setItem(BOOKMARK_KEY, JSON.stringify(bookmarks));
@@ -459,13 +394,6 @@ function validateBookmark(title, url, category) {
     return "";
 }
 
-function showBookmarkError(message, errorSelector = "#bookmark-form-error") {
-    showFormError(errorSelector, message);
-}
-
-function clearBookmarkError(errorSelector = "#bookmark-form-error") {
-    clearFormError(errorSelector);
-}
 
 $("#bookmark-form").addEventListener("submit", (event) => {
     event.preventDefault();
@@ -477,7 +405,7 @@ $("#bookmark-form").addEventListener("submit", (event) => {
     const validationMessage = validateBookmark(title, url, category);
 
     if (validationMessage) {
-        showBookmarkError(validationMessage);
+        showFormError("#bookmark-form-error", validationMessage);
         return;
     }
 
@@ -493,7 +421,7 @@ $("#bookmark-form").addEventListener("submit", (event) => {
     saveBookmarks();
     renderBookmarks();
     $("#bookmark-form").reset();
-    clearBookmarkError();
+    showFormError("#bookmark-form-error", "");
 });
 
 function getFilteredBookmarks() {
@@ -505,18 +433,20 @@ function getFilteredBookmarks() {
         item.category.toLowerCase().includes(search)
     );
 
-    return sortItems(
-        result,
-        $("#bookmark-sort").value,
-        {
-            az: (a, b) => a.title.localeCompare(b.title, "id"),
-            za: (a, b) => b.title.localeCompare(a.title, "id")
-        },
-        (a, b) => b.createdAt - a.createdAt
-    );
+    switch ($("#bookmark-sort").value) {
+        case "az":
+            result.sort((a, b) => a.title.localeCompare(b.title, "id"));
+            break;
+        case "za":
+            result.sort((a, b) => b.title.localeCompare(a.title, "id"));
+            break;
+        default:
+            result.sort((a, b) => b.createdAt - a.createdAt);
+    }
+
+    return result;
 }
 
-// Render daftar Bookmark berdasarkan pencarian dan sorting aktif.
 function renderBookmarks() {
     const data = getFilteredBookmarks();
     const list = $("#bookmark-list");
@@ -596,7 +526,7 @@ $("#bookmark-edit-form").addEventListener("submit", (event) => {
     const note = $("#edit-bookmark-note").value.trim();
     const validationMessage = validateBookmark(title, url, category);
 
-    showBookmarkError(validationMessage, "#edit-bookmark-form-error");
+    showFormError("#edit-bookmark-form-error", validationMessage);
 
     if (validationMessage) return;
 
@@ -607,7 +537,7 @@ $("#bookmark-edit-form").addEventListener("submit", (event) => {
 
     saveBookmarks();
     renderBookmarks();
-    clearBookmarkError("#edit-bookmark-form-error");
+    showFormError("#edit-bookmark-form-error", "");
     closeModal("bookmark-modal");
 });
 
@@ -651,16 +581,8 @@ let currentQuestion = 0;
 let quizScore = 0;
 let selectedAnswer = null;
 
-// Quiz state: currentQuestion dan quizScore hanya mengatur sesi aktif.
-// High score disimpan terpisah di localStorage agar tetap tersedia setelah refresh.
 function getHighScore() {
-    const storedScore = loadFromStorage(
-        QUIZ_KEY,
-        0,
-        (value) => Number.isFinite(Number(value)) && Number(value) >= 0
-    );
-    const score = Number(storedScore);
-    return Number.isFinite(score) && score >= 0 ? score : 0;
+    return Number(localStorage.getItem(QUIZ_KEY)) || 0;
 }
 
 function updateHighScoreDisplay() {
@@ -681,7 +603,6 @@ function startQuiz() {
     renderQuizQuestion();
 }
 
-// Render satu soal Quiz dan reset state pilihan untuk soal aktif.
 function renderQuizQuestion() {
     const question = quizQuestions[currentQuestion];
 
@@ -795,7 +716,7 @@ $("#next-question").addEventListener("click", () => {
 /* ==================== INITIALIZATION ==================== */
 
 function initializeApplication() {
-    const today = getLocalDateInputValue();
+    const today = new Date().toISOString().split("T")[0];
     $("#expense-date").value = today;
 
     renderExpenses();
@@ -803,7 +724,6 @@ function initializeApplication() {
     renderBookmarks();
     updateHighScoreDisplay();
 
-    // Sinkronisasi awal URL memakai replaceState agar tidak menambah history baru.
     const initialTab = getTabFromURL();
     activateTab(initialTab);
     updateTabURL(initialTab, true);
