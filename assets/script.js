@@ -32,29 +32,89 @@ const escapeHTML = (value) => {
     return div.innerHTML;
 };
 
-const isValidURL = (url) => /^https?:\/\/[^\s]+$/i.test(url.trim());
+function isValidURL(value) {
+    try {
+        const parsedURL = new URL(value.trim());
+        return (
+            (parsedURL.protocol === "http:" || parsedURL.protocol === "https:") &&
+            Boolean(parsedURL.hostname)
+        );
+    } catch {
+        return false;
+    }
+}
+
+function loadFromStorage(key, fallback = [], validator = () => true) {
+    try {
+        const storedValue = localStorage.getItem(key);
+        if (!storedValue) return fallback;
+
+        const parsedValue = JSON.parse(storedValue);
+        return validator(parsedValue) ? parsedValue : fallback;
+    } catch {
+        return fallback;
+    }
+}
+
+function showFormError(selector, message) {
+    const errorElement = $(selector);
+    if (!errorElement) return;
+
+    errorElement.textContent = message;
+    errorElement.classList.toggle("hidden", !message);
+    errorElement.setAttribute("aria-hidden", String(!message));
+}
 
 
 /* ==================== TAB ==================== */
 
-const ACTIVE_TAB_KEY = "mimimind_active_tab";
+const VALID_TABS = ["expense", "bookmark", "quiz"];
+
+function getTabFromURL() {
+    const params = new URLSearchParams(window.location.search);
+    const tab = params.get("tab");
+    return VALID_TABS.includes(tab) ? tab : "expense";
+}
+
+function updateTabURL(tabName, replace = false) {
+    const url = new URL(window.location.href);
+    url.searchParams.set("tab", tabName);
+
+    // replaceState dipakai saat inisialisasi agar tidak membuat history baru.
+    // pushState dipakai saat pengguna benar-benar berpindah tab.
+    if (replace) {
+        window.history.replaceState({ tab: tabName }, "", url);
+    } else {
+        window.history.pushState({ tab: tabName }, "", url);
+    }
+}
 
 function activateTab(tabName) {
+    const activeTab = VALID_TABS.includes(tabName) ? tabName : "expense";
+
     document.querySelectorAll(".tab-button").forEach((button) => {
-        const active = button.dataset.tab === tabName;
+        const active = button.dataset.tab === activeTab;
         button.classList.toggle("active", active);
         button.classList.toggle("text-slate-600", !active);
     });
 
     document.querySelectorAll(".tab-panel").forEach((panel) => {
-        panel.classList.toggle("active", panel.id === tabName);
+        panel.classList.toggle("active", panel.id === activeTab);
     });
-
-    localStorage.setItem(ACTIVE_TAB_KEY, tabName);
 }
 
+// Tab click membuat history baru agar tombol Back/Forward browser dapat digunakan.
 document.querySelectorAll(".tab-button").forEach((button) => {
-    button.addEventListener("click", () => activateTab(button.dataset.tab));
+    button.addEventListener("click", () => {
+        const tabName = VALID_TABS.includes(button.dataset.tab) ? button.dataset.tab : "expense";
+        activateTab(tabName);
+        updateTabURL(tabName);
+    });
+});
+
+// Back/Forward browser hanya mengubah panel berdasarkan query URL.
+window.addEventListener("popstate", () => {
+    activateTab(getTabFromURL());
 });
 
 
@@ -131,7 +191,7 @@ $("#confirm-delete").addEventListener("click", () => {
 
 const EXPENSE_KEY = "mimimind_expenses";
 
-let expenses = JSON.parse(localStorage.getItem(EXPENSE_KEY)) || [];
+let expenses = loadFromStorage(EXPENSE_KEY, [], Array.isArray);
 
 const expenseForm = $("#expense-form");
 const expenseList = $("#expense-list");
@@ -146,16 +206,18 @@ function saveExpenses() {
 
 function validateExpense(title, category, amount, type, date) {
     if (!title || !category || !type || !date) {
-        alert("Semua field transaksi wajib diisi.");
-        return false;
+        return "Semua field transaksi wajib diisi.";
     }
 
     if (!Number.isFinite(amount) || amount <= 0) {
-        alert("Jumlah harus berupa angka dan lebih dari 0.");
-        return false;
+        return "Jumlah harus berupa angka dan lebih dari 0.";
     }
 
-    return true;
+    return "";
+}
+
+function showExpenseError(elementId, message) {
+    showFormError(`#${elementId}`, message);
 }
 
 expenseForm.addEventListener("submit", (event) => {
@@ -167,7 +229,10 @@ expenseForm.addEventListener("submit", (event) => {
     const type = $("#expense-type").value;
     const date = $("#expense-date").value;
 
-    if (!validateExpense(title, category, amount, type, date)) return;
+    const validationMessage = validateExpense(title, category, amount, type, date);
+    showExpenseError("expense-form-error", validationMessage);
+
+    if (validationMessage) return;
 
     expenses.push({
         id: createId(),
@@ -185,7 +250,6 @@ expenseForm.addEventListener("submit", (event) => {
     expenseForm.reset();
 
     $("#expense-date").value = new Date().toISOString().split("T")[0];
-    alert("Transaksi berhasil ditambahkan.");
 });
 
 function getFilteredExpenses() {
@@ -317,7 +381,10 @@ $("#expense-edit-form").addEventListener("submit", (event) => {
     const type = $("#edit-expense-type").value;
     const date = $("#edit-expense-date").value;
 
-    if (!validateExpense(title, category, amount, type, date)) return;
+    const validationMessage = validateExpense(title, category, amount, type, date);
+    showExpenseError("edit-expense-form-error", validationMessage);
+
+    if (validationMessage) return;
 
     const index = expenses.findIndex((item) => item.id === id);
     if (index === -1) return;
@@ -328,7 +395,6 @@ $("#expense-edit-form").addEventListener("submit", (event) => {
     renderExpenses();
     updateExpenseSummary();
     closeModal("expense-modal");
-    alert("Transaksi berhasil diperbarui.");
 });
 
 [expenseSearch, expenseFilterType, expenseFilterCategory, expenseSort].forEach((element) => {
@@ -340,10 +406,30 @@ $("#expense-edit-form").addEventListener("submit", (event) => {
 
 const BOOKMARK_KEY = "mimimind_bookmarks";
 
-let bookmarks = JSON.parse(localStorage.getItem(BOOKMARK_KEY)) || [];
+let bookmarks = loadFromStorage(BOOKMARK_KEY, [], Array.isArray);
 
 function saveBookmarks() {
     localStorage.setItem(BOOKMARK_KEY, JSON.stringify(bookmarks));
+}
+
+function validateBookmark(title, url, category) {
+    if (!title || !url || !category) {
+        return "Nama, URL, dan kategori wajib diisi.";
+    }
+
+    if (!isValidURL(url)) {
+        return "URL harus diawali http:// atau https://";
+    }
+
+    return "";
+}
+
+function showBookmarkError(message, errorSelector = "#bookmark-form-error") {
+    showFormError(errorSelector, message);
+}
+
+function clearBookmarkError(errorSelector = "#bookmark-form-error") {
+    showFormError(errorSelector, "");
 }
 
 $("#bookmark-form").addEventListener("submit", (event) => {
@@ -353,14 +439,10 @@ $("#bookmark-form").addEventListener("submit", (event) => {
     const url = $("#bookmark-url").value.trim();
     const category = $("#bookmark-category").value.trim();
     const note = $("#bookmark-note").value.trim();
+    const validationMessage = validateBookmark(title, url, category);
 
-    if (!title || !url || !category) {
-        alert("Nama, URL, dan kategori wajib diisi.");
-        return;
-    }
-
-    if (!isValidURL(url)) {
-        alert("URL harus diawali http:// atau https://");
+    if (validationMessage) {
+        showBookmarkError(validationMessage);
         return;
     }
 
@@ -376,7 +458,7 @@ $("#bookmark-form").addEventListener("submit", (event) => {
     saveBookmarks();
     renderBookmarks();
     $("#bookmark-form").reset();
-    alert("Bookmark berhasil disimpan.");
+    clearBookmarkError();
 });
 
 function getFilteredBookmarks() {
@@ -479,16 +561,11 @@ $("#bookmark-edit-form").addEventListener("submit", (event) => {
     const url = $("#edit-bookmark-url").value.trim();
     const category = $("#edit-bookmark-category").value.trim();
     const note = $("#edit-bookmark-note").value.trim();
+    const validationMessage = validateBookmark(title, url, category);
 
-    if (!title || !url || !category) {
-        alert("Nama, URL, dan kategori wajib diisi.");
-        return;
-    }
+    showBookmarkError(validationMessage, "#edit-bookmark-form-error");
 
-    if (!isValidURL(url)) {
-        alert("URL harus diawali http:// atau https://");
-        return;
-    }
+    if (validationMessage) return;
 
     const index = bookmarks.findIndex((item) => item.id === id);
     if (index === -1) return;
@@ -497,8 +574,8 @@ $("#bookmark-edit-form").addEventListener("submit", (event) => {
 
     saveBookmarks();
     renderBookmarks();
+    clearBookmarkError("#edit-bookmark-form-error");
     closeModal("bookmark-modal");
-    alert("Bookmark berhasil diperbarui.");
 });
 
 $("#bookmark-search").addEventListener("input", renderBookmarks);
@@ -541,8 +618,16 @@ let currentQuestion = 0;
 let quizScore = 0;
 let selectedAnswer = null;
 
+// Quiz state: currentQuestion dan quizScore hanya mengatur sesi aktif.
+// High score disimpan terpisah di localStorage agar tetap tersedia setelah refresh.
 function getHighScore() {
-    return Number(localStorage.getItem(QUIZ_KEY)) || 0;
+    const storedScore = loadFromStorage(
+        QUIZ_KEY,
+        0,
+        (value) => Number.isFinite(Number(value)) && Number(value) >= 0
+    );
+    const score = Number(storedScore);
+    return Number.isFinite(score) && score >= 0 ? score : 0;
 }
 
 function updateHighScoreDisplay() {
@@ -684,13 +769,10 @@ function initializeApplication() {
     renderBookmarks();
     updateHighScoreDisplay();
 
-    const savedTab = localStorage.getItem(ACTIVE_TAB_KEY);
-
-    if (["expense", "bookmark", "quiz"].includes(savedTab)) {
-        activateTab(savedTab);
-    } else {
-        activateTab("expense");
-    }
+    // Sinkronisasi awal URL memakai replaceState agar tidak menambah history baru.
+    const initialTab = getTabFromURL();
+    activateTab(initialTab);
+    updateTabURL(initialTab, true);
 }
 
 initializeApplication();
