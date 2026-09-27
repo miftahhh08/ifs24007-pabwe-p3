@@ -26,7 +26,7 @@ Project ini dibuat berdasarkan studi kasus Praktikum 3. Aplikasi menggunakan sat
 - [x] Ringkasan pemasukan, pengeluaran, dan saldo.
 - [x] CRUD lengkap.
 - [x] Edit dan hapus menggunakan modal.
-- [x] Validasi field wajib dan jumlah harus > 0.
+- [x] Validasi field wajib dan jumlah harus > 0 dengan pesan error inline.
 - [x] Empty state.
 - [x] Search berdasarkan judul.
 - [x] Filter berdasarkan tipe dan kategori.
@@ -36,7 +36,7 @@ Project ini dibuat berdasarkan studi kasus Praktikum 3. Aplikasi menggunakan sat
 
 ### 3. Bookmark / Link Manager
 - [x] Tambah bookmark dengan judul, URL, kategori/tag, dan catatan opsional.
-- [x] Validasi URL wajib diawali `http://` atau `https://`.
+- [x] Validasi URL wajib diawali `http://` atau `https://` dengan pesan error inline.
 - [x] Link menggunakan `target="_blank"` dan `rel="noopener noreferrer"`.
 - [x] CRUD lengkap.
 - [x] Edit dan hapus menggunakan modal.
@@ -60,8 +60,9 @@ Project ini dibuat berdasarkan studi kasus Praktikum 3. Aplikasi menggunakan sat
 ### 5. Integrasi dan persistence
 - [x] Tiga fitur dipisahkan menggunakan tab.
 - [x] Hanya satu panel tab aktif.
-- [x] Tab terakhir disimpan dan dipulihkan setelah refresh.
-- [x] Key LocalStorage dipisahkan untuk expense, bookmark, quiz high score, dan tab aktif.
+- [x] Tab aktif disimpan dan dipulihkan melalui query URL `?tab=expense|bookmark|quiz`.
+- [x] Perubahan tab menggunakan `URLSearchParams` dan `history.replaceState`, tanpa menyimpan state tab pada LocalStorage.
+- [x] Key LocalStorage dipisahkan untuk expense, bookmark, dan quiz high score.
 - [x] JavaScript dikelompokkan dengan komentar per fitur.
 
 ## Struktur
